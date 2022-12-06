@@ -255,22 +255,17 @@ root@rancher-01:/etc/rancher/rke2# systemctl enable --now rke2-server.service
 
 Attendre que le SERVICE monte sur le premier serveur...
 
-````bash
-$ kubectl get nodes
-
-NAME STATUS ROLES AGE VERSION
-
-rancher-01 Ready control-plane,etcd,master 88s v1.24.8+rke2r1
-````
-
---> Tous les status doivent être \"Running\" ou \"Completed\"
+Vérification des noeuds (STATUS "Ready" nécessaire)
 
 ````bash
 root@rancher-01:/etc/rancher/rke2# kubectl get nodes
 NAME         STATUS   ROLES                       AGE   VERSION
 rancher-01   Ready    control-plane,etcd,master   88s   v1.24.8+rke2r1
+````
 
---> Tous les status doivent être "Running" ou "Completed"
+Tous les status des pods doivent être "Running" ou "Completed"
+
+````bash
 root@rancher-01:/etc/rancher/rke2# kubectl get pods -A
 NAMESPACE     NAME                                                    READY   STATUS      RESTARTS   AGE
 kube-system   cloud-controller-manager-rancher-01                     1/1     Running     18         2m20s
@@ -291,7 +286,7 @@ kube-system   rke2-metrics-server-67697454f8-ktgbm                    1/1     Ru
 
 ````
 
-Ou encore :
+Ou encore il faut qu'il y ait 11 pods Running :
 
 ````bash
 kubectl get pods -A | grep Running | wc -l

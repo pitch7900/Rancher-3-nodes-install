@@ -139,13 +139,13 @@ Configuration et préparation des serveurs Ubuntu
 Installation sur ubuntu 22.04 fresh install
 -------------------------------------------
 
-\--\> Créer /root/.ssh/id\_rsa et /root/.ssh/autorized\_keys et les copier sur les serveurs du cluster sur le serveur rancher-01
+--> Créer /root/.ssh/id\_rsa et /root/.ssh/autorized\_keys et les copier sur les serveurs du cluster sur le serveur rancher-01
 
 ````bash
 ssh-keygen -t rsa -b 4096 -C "rancher@mydomain.local"
 ````
 
-\--\> Au besoin [[https://linuxhint.com/generate-ssh-key-ubuntu/]{.underline}](https://linuxhint.com/generate-ssh-key-ubuntu/)
+--> Au besoin [[https://linuxhint.com/generate-ssh-key-ubuntu/]](https://linuxhint.com/generate-ssh-key-ubuntu/)
 
 Ajouter les configurations suivantes pour dire quel fichier de clef privée doit être utilisée pour atteindre chaque serveur.
 
@@ -261,9 +261,9 @@ $ kubectl get nodes
 NAME STATUS ROLES AGE VERSION
 
 rancher-01 Ready control-plane,etcd,master 88s v1.24.8+rke2r1
-```` 
+````
 
-\--\> Tous les status doivent être \"Running\" ou \"Completed\"
+--> Tous les status doivent être \"Running\" ou \"Completed\"
 
 ````bash
 root@rancher-01:/etc/rancher/rke2# kubectl get nodes
@@ -319,7 +319,7 @@ tls-san:
 systemctl enable --now rke2-server.service
 ````
 
-[[https://docs.rke2.io/upgrade/manual\_upgrade]{.underline}](https://docs.rke2.io/upgrade/manual_upgrade)
+[[https://docs.rke2.io/upgrade/manual\_upgrade]](https://docs.rke2.io/upgrade/manual_upgrade)
 
 ### Vérifier que les nœuds s\'ajoutent bien
 
@@ -396,9 +396,7 @@ Auto-complétion pour Kubectl
 parallel-ssh -t 0 -h rancher-hosts.txt "kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null"
 ````
 
-*À partir de l'adresse \<[[https://kubernetes.io/docs/tasks/tools/included/optional-kubectl-configs-bash-linux/]{.underline}](https://kubernetes.io/docs/tasks/tools/included/optional-kubectl-configs-bash-linux/)\>*
-
-\* *
+*Lien : \<[[https://kubernetes.io/docs/tasks/tools/included/optional-kubectl-configs-bash-linux/]](https://kubernetes.io/docs/tasks/tools/included/optional-kubectl-configs-bash-linux/)\>*
 
 Check des services
 --------------------
@@ -445,7 +443,7 @@ Installation de Helm
 Installation
 ------------
 
-[[https://helm.sh/docs/intro/install/]{.underline}](https://helm.sh/docs/intro/install/)
+[[https://helm.sh/docs/intro/install/]](https://helm.sh/docs/intro/install/)
 
 ````bash
 parallel-ssh -t 0 -h rancher-hosts.txt curl -fsSL -o /root/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
@@ -468,12 +466,12 @@ Ajout de l\'auto-complétion Helm
 parallel-ssh -t 0 -h rancher-hosts.txt "helm completion bash > /etc/bash_completion.d/helm"
 ````
 
-*À partir de l'adresse \<[[https://helm.sh/docs/helm/helm\_completion\_bash/]{.underline}](https://helm.sh/docs/helm/helm_completion_bash/)\>*
+*Lien : \<[[https://helm.sh/docs/helm/helm\_completion\_bash/]](https://helm.sh/docs/helm/helm_completion_bash/)\>*
 
 Installation de cert-manager
 ============================
 
-[[https://cert-manager.io/docs/installation/helm/\#3-install-customresourcedefinitions]{.underline}](https://cert-manager.io/docs/installation/helm/#3-install-customresourcedefinitions)
+[[https://cert-manager.io/docs/installation/helm/\#3-install-customresourcedefinitions]](https://cert-manager.io/docs/installation/helm/#3-install-customresourcedefinitions)
 
 ````bash
 parallel-ssh -t 0 -h rancher-hosts.txt helm repo add jetstack https://charts.jetstack.io
@@ -501,7 +499,7 @@ parallel-ssh -t 0 -h rancher-hosts.txt helm repo update
 
 ````
 
-*À partir de l'adresse \<[[https://docs.ranchermanager.rancher.io/pages-for-subheaders/install-upgrade-on-a-kubernetes-cluster\#1-add-the-helm-chart-repository]{.underline}](https://docs.ranchermanager.rancher.io/pages-for-subheaders/install-upgrade-on-a-kubernetes-cluster#1-add-the-helm-chart-repository)\>*
+*Lien : \<[[https://docs.ranchermanager.rancher.io/pages-for-subheaders/install-upgrade-on-a-kubernetes-cluster\#1-add-the-helm-chart-repository]](https://docs.ranchermanager.rancher.io/pages-for-subheaders/install-upgrade-on-a-kubernetes-cluster#1-add-the-helm-chart-repository)\>*
 
 Création du namespace pour rancher
 ----------------------------------
@@ -558,14 +556,14 @@ kubectl -n cattle-system get pods
 kubectl -n cattle-system describe pod
 ````
 
-*À partir de l'adresse \<[[https://docs.ranchermanager.rancher.io/getting-started/installation-and-upgrade/install-upgrade-on-a-kubernetes-cluster/troubleshooting]{.underline}](https://docs.ranchermanager.rancher.io/getting-started/installation-and-upgrade/install-upgrade-on-a-kubernetes-cluster/troubleshooting)\>*
+*Lien : \<[[https://docs.ranchermanager.rancher.io/getting-started/installation-and-upgrade/install-upgrade-on-a-kubernetes-cluster/troubleshooting]](https://docs.ranchermanager.rancher.io/getting-started/installation-and-upgrade/install-upgrade-on-a-kubernetes-cluster/troubleshooting)\>*
 
 Ça peut être long...
 
 Install Rancher CLI
 -------------------
 
-[[https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli\#commands]{.underline}](https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli#commands)
+[[https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli\#commands]](https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli#commands)
 
 ````bash
 parallel-ssh -t 0 -h rancher-hosts.txt wget https://github.com/rancher/cli/releases/download/v2.7.0/rancher-linux-amd64-v2.7.0.tar.gz -O /root/rancher_cli.tgz
@@ -580,9 +578,9 @@ Troubleshooting
 
 Les configurations se trouvent ici : /var/lib/rancher/rke2/server/manifests/
 
-*À partir de l'adresse \<[[https://github.com/rancher/rke2/issues/1446]{.underline}](https://github.com/rancher/rke2/issues/1446)\>*
+*Lien : \<[[https://github.com/rancher/rke2/issues/1446]](https://github.com/rancher/rke2/issues/1446)\>*
 
-[[https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli\#commands]{.underline}](https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli#commands)
+[[https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli\#commands]](https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli#commands)
 
 ````bash
 kubectl get pods -n cattle-system -o wide
@@ -633,30 +631,30 @@ helm list --all-namespaces
 Ressources
 ==========
 
-[[https://docs.ranchermanager.rancher.io/how-to-guides/new-user-guides/kubernetes-cluster-setup/rke2-for-rancher]{.underline}](https://docs.ranchermanager.rancher.io/how-to-guides/new-user-guides/kubernetes-cluster-setup/rke2-for-rancher)
+[[https://docs.ranchermanager.rancher.io/how-to-guides/new-user-guides/kubernetes-cluster-setup/rke2-for-rancher]](https://docs.ranchermanager.rancher.io/how-to-guides/new-user-guides/kubernetes-cluster-setup/rke2-for-rancher)
 
 Installation de rke2 (doc mieux faite que l\'officielle)
 
-[[https://infohub.delltechnologies.com/l/suse-rancher-and-rke2-kubernetes-cluster-in-apex-private-cloud-services/steps-to-install-rke2-cluster-three-nodes-manually]{.underline}](https://infohub.delltechnologies.com/l/suse-rancher-and-rke2-kubernetes-cluster-in-apex-private-cloud-services/steps-to-install-rke2-cluster-three-nodes-manually)
+[[https://infohub.delltechnologies.com/l/suse-rancher-and-rke2-kubernetes-cluster-in-apex-private-cloud-services/steps-to-install-rke2-cluster-three-nodes-manually]](https://infohub.delltechnologies.com/l/suse-rancher-and-rke2-kubernetes-cluster-in-apex-private-cloud-services/steps-to-install-rke2-cluster-three-nodes-manually)
 
-Configuration file (ne sert à RIEN sur le site) pour installation de RKE2 \--\> Voir le site de Dell
+Configuration file (ne sert à RIEN sur le site) pour installation de RKE2 --> Voir le site de Dell
 
-[[https://docs.rke2.io/install/configuration\#configuration-file]{.underline}](https://docs.rke2.io/install/configuration#configuration-file)
+[[https://docs.rke2.io/install/configuration\#configuration-file]](https://docs.rke2.io/install/configuration#configuration-file)
 
 Un peu plus d\'informations sur :
 
-[[https://docs.rke2.io/reference/server\_config]{.underline}](https://docs.rke2.io/reference/server_config)
+[[https://docs.rke2.io/reference/server\_config]](https://docs.rke2.io/reference/server_config)
 
-[[https://docs.ranchermanager.rancher.io/pages-for-subheaders/installation-and-upgrade]{.underline}](https://docs.ranchermanager.rancher.io/pages-for-subheaders/installation-and-upgrade)
+[[https://docs.ranchermanager.rancher.io/pages-for-subheaders/installation-and-upgrade]](https://docs.ranchermanager.rancher.io/pages-for-subheaders/installation-and-upgrade)
 
 Rancher Rodeo :
 
-[[https://9to5tutorial.com/rodeo-scenario-with-v2-6-2021-10]{.underline}](https://9to5tutorial.com/rodeo-scenario-with-v2-6-2021-10)
+[[https://9to5tutorial.com/rodeo-scenario-with-v2-6-2021-10]](https://9to5tutorial.com/rodeo-scenario-with-v2-6-2021-10)
 
 Helm
 
-[[https://helm.sh/docs/intro/install/]{.underline}](https://helm.sh/docs/intro/install/)
+[[https://helm.sh/docs/intro/install/]](https://helm.sh/docs/intro/install/)
 
 Rancher-cli
 
-[[https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli\#commands]{.underline}](https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli#commands)
+[[https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli\#commands]](https://docs.ranchermanager.rancher.io/v2.6/reference-guides/cli-with-rancher/rancher-cli#commands)

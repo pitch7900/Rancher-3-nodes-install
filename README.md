@@ -1,3 +1,13 @@
+Principe
+========
+
+Créer un cluster Rancher en utilisant RKE2 (Rancher Kubernetes Engine) sur trois noeuds en haute disponibilité sur une installation fraiche de Ubuntu 22.04 LTS.
+L'installation proprement dites de Ubuntu serveur ne sera pas détaillée ici, seul les points imports de la configuration le seront.
+Important :
+* Configuration en IP fixes (10.79.1.201/24 pour rancher-01, 10.79.1.202/24 pour rancher-02, 10.79.1.203/24 pour rancher-03)
+* Utilisation et main mise sur un serveur de DNS interne pour changer les entrées (ici un serveur bind9 externe a cette doc)
+* Connaissance de la configuration et du management du FW en front
+
 Schéma
 ======
 
@@ -6,17 +16,69 @@ Schéma
 Machines virtuelles
 ===================
 
-CPU : 2 (min 2)
-Mémoire : 8GB (min 4GB)
-Disque : 100GB
-OS : Ubuntu 22.04 LTS
+* CPU : 2 (min 2)
+* Mémoire : 8GB (min 4GB)
+* Disque : 100GB
+* OS : Ubuntu 22.04 LTS
 
 ![](/media/image2.png)
 
 Configuration apache2 en reverse proxy
 ======================================
 
-File :  /etc/apache2/sites-available/rancher.mydomain.com.conf
+````bash
+apt update
+apt -y upgrade
+apt -y install apache2 certbot python3-certbot-apache
+a2dissite 000-default
+a2enmod ssl rewrite headers proxy deflate env proxy_http negociation negotiation status proxy_balancer substitute
+systemctl restart apache2
+````
+
+File :  /etc/apache2/sites-available/http.rancher.mydomain.com.conf
+
+````apacheconf
+<VirtualHost _default_:80>
+  ProxyPreservehost Off
+  ServerName  rancher.mydomain.com
+  ServerAlias rancher.mydomain.com
+
+  AllowEncodedSlashes NoDecode
+  CustomLog ${APACHE_LOG_DIR}/access.rancher.mydomain.com_80.log combined
+
+  <Directory /var/www/rancher>
+    AllowOverride All
+  </Directory>
+  ErrorLog ${APACHE_LOG_DIR}/error.rancher.mydomain.com_80.log
+  # Possible values include: debug, info, notice, warn, error, crit,
+  # alert, emerg.
+  LogLevel warn
+  CustomLog ${APACHE_LOG_DIR}/access.rancher.mydomain.com_80.log combined
+  DocumentRoot /var/www/rancher
+
+RewriteEngine on
+RewriteCond %{SERVER_NAME} =rancher.mydomain.com
+RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+</VirtualHost>
+````
+
+````bash
+mkdir -p /var/www/rancher/.well-known
+echo "Options +FollowSymLinks
+RewriteEngine on
+RewriteCond %{REQUEST_URI} !^/.well-known/
+
+RewriteRule (.*) https://rancher.mydomain.com/$1 [R=301,L]
+">/var/www/rancher/.htaccess
+chown -R www-data:www-data /var/www/
+chmod 644 /var/www/rancher/.htaccess
+a2ensite http.rancher.mydomain.com
+systemctl reload apache2
+certbot --apapche
+a2dissite http.rancher.mydomain.com-le-ssl
+````
+
+File :  /etc/apache2/sites-available/ssl.rancher.mydomain.com.conf
 
 ````apacheconf
 <IfModule mod_ssl.c>
@@ -32,8 +94,6 @@ File :  /etc/apache2/sites-available/rancher.mydomain.com.conf
   SSLCertificateKeyFile /etc/letsencrypt/live/rancher.mydomain.com/privkey.pem
   Include /etc/letsencrypt/options-ssl-apache.conf
  
-  ErrorDocument 503 http://ssl.mydomain.com/503.html
-  
   RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
   RequestHeader set "X-Forwarded-SSL" expr=%{HTTPS}
   RequestHeader set X-Forwarded-Port "443"
@@ -42,8 +102,7 @@ File :  /etc/apache2/sites-available/rancher.mydomain.com.conf
   ProxyRequests Off
   ProxyPreserveHost On
   ProxyPassReverseCookieDomain kube.mydomain.local rancher.mydomain.com
-  #This line require mod substitute (a2enmod substitute) to work. It will rewrite all query on kube.mydomain.local to rancher.mydomain.local
-  #Substitute "s|kube.mydomain.local|rancher.mydomain.com|i"
+
   ServerName  rancher.mydomain.com
   ServerAlias rancher.mydomain.com
 
@@ -69,13 +128,18 @@ File :  /etc/apache2/sites-available/rancher.mydomain.com.conf
 </IfModule>
 ````
 
+````bash
+a2ensite ssl.rancher.mydomain.com
+systemctl reload apache2
+````
+
 Configuration et préparation des serveurs Ubuntu
 ================================================
 
 Installation sur ubuntu 22.04 fresh install
 -------------------------------------------
 
-\--\> Créer /root/.ssh/id\_rsa et /root/.ssh/autorized\_keys et les copier sur les serveurs du cluster
+\--\> Créer /root/.ssh/id\_rsa et /root/.ssh/autorized\_keys et les copier sur les serveurs du cluster sur le serveur rancher-01
 
 ````bash
 ssh-keygen -t rsa -b 4096 -C "rancher@mydomain.local"
@@ -100,17 +164,21 @@ Host rancher-03
     Hostname rancher-03
     IdentityFile ~/.ssh/id_rsa.rancher
     IdentitiesOnly yes" >> /root/.ssh/config
+
+ssh rancher-01 #Accept fingerprint and quit
+ssh rancher-02 #Accept fingerprint and quit
+ssh rancher-03 #Accept fingerprint and quit
  
- 
-echo "contenu du fichier /root/.ssh/id_rsa.rancher sur le serveur 1">/root/.ssh/id_rsa.rancher
-echo "contenu du fichier /root/.ssh/id_rsa.rancher.pub sur le serveur 1" >>/root/.ssh/authorized_keys
-echo "contenu du fichier  /root/.ssh/known_hosts  sur le serveur 1" > /root/.ssh/known_hosts
+
+echo "contenu du fichier /root/.ssh/id_rsa.rancher sur le serveur rancher-01">/root/.ssh/id_rsa.rancher
+echo "contenu du fichier /root/.ssh/id_rsa.rancher.pub sur le serveur rancher-01" >>/root/.ssh/authorized_keys
+echo "contenu du fichier  /root/.ssh/known_hosts  sur le serveur rancher-01" > /root/.ssh/known_hosts
 ````
 
 Installation des packages avec parallel-ssh
 -------------------------------------------
 
-Fichier rancher-hosts.txt
+Fichier /root/rancher-hosts.txt
 
 ````txt
 rancher-01
@@ -484,7 +552,7 @@ Vérification
 ------------
 
 ````bash
-while true; do curl -kv https://rancher.blondyfamily.com 2>&1 | grep -q "workloads"; if [ $? != 0 ]; then echo "Rancher isn't ready yet"; sleep 5; continue; fi; break; done; echo "Rancher is Ready";
+while true; do curl -kv https://rancher.mydomain.com 2>&1 | grep -q "workloads"; if [ $? != 0 ]; then echo "Rancher isn't ready yet"; sleep 5; continue; fi; break; done; echo "Rancher is Ready";
 
 kubectl -n cattle-system get pods
 kubectl -n cattle-system describe pod
@@ -536,7 +604,7 @@ Pour voir les connexions ingress (entrantes)
 ````bash
 kubectl get ingress --all-namespaces
 NAMESPACE       NAME      CLASS    HOSTS                      ADDRESS                               PORTS   AGE
-cattle-system   rancher   <none>   rancher.blondyfamily.com   10.79.1.201,10.79.1.202,10.79.1.203   80      10h
+cattle-system   rancher   <none>   rancher.mydomain.com   10.79.1.201,10.79.1.202,10.79.1.203   80      10h
 
  ````
 

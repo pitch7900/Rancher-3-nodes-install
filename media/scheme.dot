@@ -1,0 +1,154 @@
+# Compile : dot -Tpng .\scheme.dot -o .\scheme.png
+
+digraph "scheme"
+{
+graph [fontname = "calibri"];
+ node [fontname = "calibri"];
+ edge [fontname = "calibri"];
+
+bgcolor = "#ffffff"
+imagescale=true
+component=true;
+// layout=fdp;
+
+subgraph cluster_Rancher {
+
+    label=<
+      <TABLE BGCOLOR="#ffffff" BORDER="0" ALIGN="LEFT">
+      <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><b>DNS Load-Balanced (internal) :</b></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="10">kube.mydomain.local</FONT></TD></TR>
+      </TABLE>
+   >
+   
+    {rank=same node_rancher_03 node_rancher_02 node_rancher_01}
+    //  node_rancher_03 -> node_rancher_02 -> node_rancher_01
+}
+
+"node_rancher_01" [
+    shape = none,
+    label=<
+      <TABLE BGCOLOR="#ffffff" BORDER="0" ALIGN="CENTER">
+      <TR><TD FIXEDSIZE="TRUE" HEIGHT="70" WIDTH="50"><IMG SCALE="TRUE" SRC="shapes/vm.png" /></TD></TR>
+      <TR><TD><FONT POINT-SIZE="12"><b>rancher_01</b></FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="10">10.79.1.201</FONT></TD></TR>
+      </TABLE>
+   >
+]
+
+"node_comment_lb" [
+    shape= note,
+    label=<
+      <TABLE BGCOLOR="#ffffff" BORDER="0" ALIGN="CENTER">
+     
+      <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><b>TLS/SSL end</b></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="10">letsencrypt certicate management here</FONT></TD></TR>
+      </TABLE>
+   >
+]
+
+"node_comment_fw_public" [
+    shape= note,
+    label=<
+      <TABLE BGCOLOR="#ffffff" BORDER="0" ALIGN="CENTER">
+      <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><b>Published services on internet</b></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="10">https (tcp 443) to reverse proxy (DNAT)</FONT></TD></TR>
+      </TABLE>
+   >
+]
+
+"node_rancher_02" [
+    shape = none,
+    label=<
+      <TABLE BGCOLOR="#ffffff" BORDER="0" ALIGN="CENTER">
+      <TR><TD FIXEDSIZE="TRUE" HEIGHT="70" WIDTH="50"><IMG SCALE="TRUE" SRC="shapes/vm.png" /></TD></TR>
+      <TR><TD><FONT POINT-SIZE="12"><b>rancher_02</b></FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="10">10.79.1.202</FONT></TD></TR>
+      </TABLE>
+   >
+]
+
+"node_rancher_03" [
+    shape = none,
+    label=<
+      <TABLE BGCOLOR="#ffffff" BORDER="0" ALIGN="CENTER">
+      <TR><TD FIXEDSIZE="TRUE" HEIGHT="70" WIDTH="50"><IMG SCALE="TRUE" SRC="shapes/vm.png" /></TD></TR>
+      <TR><TD><FONT POINT-SIZE="12"><b>rancher_03</b></FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="10">10.79.1.203</FONT></TD></TR>
+      </TABLE>
+   >
+]
+
+
+
+"node_firewall_internal" [
+    shape = none,
+    label=<
+      <TABLE BGCOLOR="#ffffff" BORDER="0" ALIGN="CENTER">
+      <TR><TD FIXEDSIZE="TRUE" HEIGHT="80" WIDTH="80"><IMG SCALE="TRUE" SRC="shapes/firewall.png" /></TD></TR>
+      <TR><TD><FONT POINT-SIZE="12"><b>Firewall</b></FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="10">10.79.1.254</FONT></TD></TR>
+      </TABLE>
+   >
+]
+
+"node_internet" [
+    shape = none,
+    label=<
+      <TABLE BGCOLOR="#ffffff" BORDER="0" ALIGN="CENTER">
+      <TR><TD><IMG SCALE="TRUE" SRC="shapes/cloud.png" /></TD></TR>
+      <TR><TD><FONT POINT-SIZE="12"><b>Internet</b></FONT></TD></TR>
+      </TABLE>
+   >
+]
+
+"node_firewall_public" [
+    shape = none,
+    label=<
+      <TABLE BGCOLOR="#ffffff" BORDER="0" ALIGN="CENTER">
+      <TR><TD FIXEDSIZE="TRUE" HEIGHT="80" WIDTH="80"><IMG SCALE="TRUE" SRC="shapes/firewall.png" /></TD></TR>
+      <TR><TD><FONT POINT-SIZE="12"><b>Firewall public</b></FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="10">rancher.mydomain.com</FONT></TD></TR>
+      </TABLE>
+   >
+]
+
+"node_proxy_lb" [
+    shape = none,
+    label=<
+      <TABLE BGCOLOR="#ffffff" BORDER="0" ALIGN="CENTER">
+      <TR><TD FIXEDSIZE="TRUE" HEIGHT="70" WIDTH="50"><IMG SCALE="TRUE" SRC="shapes/lb.png" /></TD></TR>
+      <TR><TD><FONT POINT-SIZE="12"><b>Reverse Proxy</b></FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="10">DMZ</FONT></TD></TR>
+      </TABLE>
+   >
+]
+
+
+
+
+
+edge [
+class = "edge"
+,weight = "1"
+,penwidth = "1"
+,"_vis_" = "label"
+,"color" = "#a0a0a4"
+,"style" = "solid"
+];
+
+"node_firewall_internal" -> "node_rancher_02" [label=<<FONT POINT-SIZE="8" COLOR="#a0a0a4">port 443</FONT>>];
+"node_firewall_internal" -> "node_rancher_03" [label=<<FONT POINT-SIZE="8" COLOR="#a0a0a4">port 443</FONT>>];
+"node_firewall_internal" -> "node_rancher_01" [label=<<FONT POINT-SIZE="8" COLOR="#a0a0a4">port 443</FONT>>];
+"node_comment_lb" -> "node_proxy_lb";
+
+
+"node_proxy_lb" -> "node_firewall_internal" [id = "E3"];
+
+"node_firewall_public" -> "node_proxy_lb" [label=<<FONT POINT-SIZE="8" COLOR="#a0a0a4">port 443</FONT>>];
+"node_comment_fw_public" -> "node_firewall_public";
+"node_internet" -> "node_firewall_public" ;
+
+
+
+
+}

@@ -1,7 +1,7 @@
 **Schéma**
 ======
 
-![](/media/image1.png)
+![](/media/scheme.png)
 
 [**<<Retour**][Home]
 
